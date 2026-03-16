@@ -242,3 +242,40 @@ static ssize_t dev_read(struct file*filep, char __user *buf, size_t len, loff_t 
    pr_info("[%s] Da doc %d bytes, offset hien tai = %lld\n", DEVICE_NAME, bytes_to_read, *offset);
    return bytes_to_read; /* Trả về số bytes thực tế đã đọc */
 }
+
+/*
+Hàm 4 : dev write()  
+Kích hoạt khi: user-space gọi write(fd, data, count)
+Tham số : 
+filep : struct file của phiên bản mở hiện tại 
+buf : buffer của USER SPACE - Chứa dữ liệu cần ghi 
+    __user = annotation cho compiler và sparse tool, không ảnh hưởng đến runtime
+   len: số bytes user muốn ghi
+   offset : vị trí ghi (driver này bỏ qua offset, luôn ghi đè từ đầu)
+   Trả về : 
+   > 0 : số bytes đã ghi thực tế 
+   < 0 : lỗi
+
+*/ 
+
+static ssize_t dev_write(struct file *filep, const char __user *buf, size_t len, loff_t *offset){
+   int bytes_to_write;
+
+   /*
+   Giới hạn số bytes ghi : 
+   Không ghi quá (BUF_SIZE - 1) để chừa 1 bytes cuối cùng cho ký tự '\0'
+   ví dụ : BUF_SIZE  = 1024,user muốn ghi 2000 bytes 
+   ---> bytes)_to_write = min(2000, 1023) = 1023
+   (Chỉ ghi 1023 bytes cho  1024 bytes, byte 1024 dành cho \0)
+   */ 
+   bytes_to_write = min((int)len, (int)(BUF_SIZE - 1));
+   /*
+   Copy dữ liệu User space --> Kernel space 
+   copy_from_user() tương tự copy_to_user() nhưng ngược chiều.
+   Trả về số bytes không copy được (0 = thành công)
+   Cú pháp : copy_from_user(dst_kernel, src_user, n_bytes)
+   
+   */
+
+
+}
